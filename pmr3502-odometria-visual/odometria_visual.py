@@ -47,6 +47,3 @@ class EstimativaPosicao():
             self._t += mov_t
 
             return (self._x, self._y, self._t)
-
-
-
