@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>My Web Page</title>
+<script>
+var wsUri = (window.location.protocol=='https:'&&'wss://'||'ws://')+window.location.host+"/wsctrl";
+var canvas;
+var socket = new WebSocket(wsUri);
+socket.addEventListener('open', function (event) {
+    console.log('Connection estabilshed!');
+    //socket.send("test");
+});
+
+
+socket.addEventListener('close', function (event) {
+    console.log('Connection closed!');
+});
+
+const robot_points = [
+        [0,0],
+        [-200, 100],
+        [-200,-100]
+];
+
+socket.onmessage = function (event) {
+    console.log('Message from server ', event.data);
+    const data = JSON.parse(event.data);
+    var ox = data[0];
+    var oy = data[1];
+    theta = data[2];
+    scale = 0.25
+    center_x = 400
+    center_y = 400
+
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, 800, 800);
+    ctx.beginPath();
+
+    ctx.fillStyle = '#f00';
+
+    var x = ox + robot_points[0][0]*Math.cos(theta) - robot_points[0][1]*Math.sin(theta);
+    var y = oy + robot_points[0][1]*Math.cos(theta) + robot_points[0][0]*Math.sin(theta);
+
+    x = scale*x+center_x;
+    y = -scale*y+center_y;
+
+    ctx.moveTo(x, y);
+    for (var i = 1; i < robot_points.length; ++i) {
+        x = ox + robot_points[i][0]*Math.cos(theta) - robot_points[i][1]*Math.sin(theta);
+        y = oy + robot_points[i][1]*Math.cos(theta) + robot_points[i][0]*Math.sin(theta);
+
+        x = scale*x+center_x;
+        y = -scale*y+center_y;
+
+        ctx.lineTo(x, y);
+    }
+    ctx.closePath();      // go back to point 1
+    ctx.fill();
+    ctx.stroke();
+
+}
+
+
+window.addEventListener("load", function(e) {
+    canvas = document.getElementById("mycanvas");
+});
+
+
+</script>
+</head>
+<html>
+<body>
+<canvas id="mycanvas" width="800" height="800" style="border:1px solid #000000;">
+Your browser does not support the HTML canvas tag.
+</canvas>
+</body>
+</html>
