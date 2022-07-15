@@ -15,7 +15,7 @@ class ProcessamentoVisao():
 
       def estimaMovimento(self, quadro):
             # Complete a estimativa de movimento
-            return (0.0, 0.0, 0.0)
+            return (1.0, 1.0, 1.0)
 
 
 
