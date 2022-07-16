@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import traceback
+import math
 
 class ProcessamentoVisao():
 
@@ -15,7 +16,7 @@ class ProcessamentoVisao():
 
       def estimaMovimento(self, quadro):
             # Complete a estimativa de movimento
-            return (1.0, 1.0, 1.0)
+            return (10.0, 10.0, 1.0*math.pi/180)
 
 
 
@@ -28,15 +29,18 @@ class EstimativaPosicao():
             self._video = cv2.VideoCapture(0)
             self._video.set(cv2.CAP_PROP_FRAME_WIDTH, 1280);
             self._video.set(cv2.CAP_PROP_FRAME_HEIGHT, 720);
+            # img = cv2.imread("../images/adp_v2.jpg")
             rc, img = self._video.read()
             self._processamento = ProcessamentoVisao(1280, 720, 800)
             self._processamento.primeiroQuadro(img)
 
       def atualizaPosicao(self):
             rc, img = self._video.read()
+            # img = cv2.imread("../images/adp_v2.jpg")
 
             if not rc:
-                return (0.0, 0.0, 0.0)
+                  print("not rc")
+                  return (0.0, 0.0, 0.0)
 
             # Estima o movimento
             mov_x, mov_y, mov_t = self._processamento.estimaMovimento(img)

@@ -7,29 +7,41 @@ with open("/home/pi/Robotica_movel/matrices.txt","r") as file:
 	
 	
 mtx = np.array(matrices["mtx"])
-dist = np.array(matrices["dist"])	
+dist = np.array(matrices["dist"])
 rot = np.array(matrices["rot"])
 trans = np.array(matrices["trans"])
 mtx2 = np.array(matrices["mtx2"])
-rodrigues,jacobiano = cv2.Rodrigues(rot)
-# dim = matrices["dim"]
+rodrigues, jacobiano = cv2.Rodrigues(rot)
 
 def _S():
 	_P = np.array([[1, 0, 0, 0],[0, 1, 0, 0],[0, 0, 1, 0]])
 	_G = np.eye(4)
 	_G[0:3,0:3] = rodrigues
-	_G[0:3,3] = trans
+	_G[0:3,3] = trans.T
 	_N = _P@_G
 	_Nz = np.eye(3)
 	_Nz[0:3, 0:2] = _N[0:3,0:2]
 	_Nz[0:3, 2] = _N[:,3]
 	_Q = np.linalg.inv(_Nz)
 	S = _Q/_Q[2][2]
-	return S
+	return Q, S
 S = _S()
 
-def _mapaxy(dim=(948,840)):
-	return cv2.initUndistortRectifyMap(mtx, dist, S, mtx2, dim, cv2.CV_32FC1)
+def _mapaxy(dim=(4*297,4*210)):
+	# valores obtidos com a função
+	# imagem2global de um notebook anterior
+	y_max = 333.522
+	y_min = -320.964
+	x_max = 439.217
+	x_min = 62.422
+
+	s = 1
+    # matriz do campo visual do robô:
+	C = np.array([[s,  0, -s*x_min],
+				  [0, -s,  s*y_max],
+				  [0,  0,		1]])
+    
+	return cv2.initUndistortRectifyMap(mtx, dist, S, C, dim, cv2.CV_32FC1)
 mapa_x,mapa_y = _mapaxy()
 
 
@@ -50,10 +62,6 @@ def recalibra_extrinseca(img, dim=(6,6)):
 		for y in range(4, -5, -1):
 			coords_globais.append((x_central+(x*DIST), y_central-(y*DIST), 0.0))
 
-# 	print(corners)
-# 	print("\n")
-# 	print(coords_globais)
-# 	print("\n")
 	ret, _rot, _trans = cv2.solvePnP(np.array(coords_globais), corners, mtx, dist)
 	matrices["rot"] = _rot.tolist()
 	matrices["trans"] = _trans.tolist()
@@ -73,13 +81,12 @@ def captura_e_recalibra_extrinseca():
 	clear_output(wait=True)
 	frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
 	vid.release()
-	plt.imshow(frame)
 	recalibra_extrinseca(frame)
 
 def imagem2global(p, lamb):
-    p = cv2.undistortPoints(np.float32(p), mtx, dist)
-    p = [*p[0][0], 1]
-    return lamb*R.T@p - R.T@t
+	p = cv2.undistortPoints(np.float32(p), mtx, dist)
+	p = [*p[0][0], 1]
+	return lamb*R.T@p - R.T@t
 
 
 
