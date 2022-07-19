@@ -3,20 +3,40 @@ import numpy as np
 import traceback
 import math
 
+module_path = os.path.abspath(os.path.join('..'))
+if module_path not in sys.path:
+    sys.path.append(module_path)
+from utils import *
+
 class ProcessamentoVisao():
 
       def __init__(self, largura, altura, treshold):
-            # Complete a inicialização do objeto
-            pass
-
+            self.largura = largura
+            self.altura = altura
+            self.treshold = treshold
+            self.x = 0
+            self.y = 0
+            self.theta = 0
 
       def primeiroQuadro(self, quadro):
-            # Complete a inicialização do primeiro quadro
-            pass
+            self.quadro_anterior = reprojeta(quadro)
 
       def estimaMovimento(self, quadro):
-            # Complete a estimativa de movimento
-            return (10.0, 10.0, 1.0*math.pi/180)
+            self.quadro = reprojeta(quadro)
+            
+            kp1, desc1 = get_pontos_surf(self.quadro)
+            kp2, desc2 = get_pontos_surf(self.quadro_anterior)
+            # TODO: conferir se existem ao menos 8 associações boas
+            matriz, mascara = get_transformada_entre_conjuntos_pontos(kp1, desc1, kp2, desc2)
+            
+            if len(mascara) < 5:
+                print("aviso: mascara < 5")
+            
+            print(matriz)
+            
+            self.quadro_anterior = self.quadro
+    #             return (10.0, 10.0, 1.0*math.pi/180)
+            return (self.x, self.y, self.theta)
 
 
 

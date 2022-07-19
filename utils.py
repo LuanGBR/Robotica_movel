@@ -13,7 +13,8 @@ trans = np.array(matrices["trans"])
 mtx2 = np.array(matrices["mtx2"])
 rodrigues, jacobiano = cv2.Rodrigues(rot)
 
-def _Q():
+# TODO: conferir qual é a Q certa pra cada parte
+def _S():
 	_P = np.array([[1, 0, 0, 0],[0, 1, 0, 0],[0, 0, 1, 0]])
 	_G = np.eye(4)
 	_G[0:3,0:3] = rodrigues
@@ -22,14 +23,11 @@ def _Q():
 	_Nz = np.eye(3)
 	_Nz[0:3, 0:2] = _N[0:3,0:2]
 	_Nz[0:3, 2] = _N[:,3]
-	Q = np.linalg.inv(_Nz)
-	return Q
-Q = _Q()
-
-def _S():
-	S = Q/Q[2][2]
+	_Q = np.linalg.inv(_Nz)
+	S = _Q/_Q[2][2]
 	return S
 S = _S()
+C = np.zeros((3,3))
 
 def _mapaxy(dim=(4*297,4*210)):
 	# valores obtidos com a função
@@ -41,9 +39,8 @@ def _mapaxy(dim=(4*297,4*210)):
 
 	s = 1
     # matriz do campo visual do robô:
-	C = np.array([[s,  0, -s*x_min],
-				  [0, -s,  s*y_max],
-				  [0,  0,		1]])
+    # essa matriz está descrita no capítulo 6.6 como "Q"
+	C += np.array([[s,  0, -s*x_min],[0, -s,  s*y_max],[0,  0,		1]])
     
 	return cv2.initUndistortRectifyMap(mtx, dist, S, C, dim, cv2.CV_32FC1)
 mapa_x,mapa_y = _mapaxy()
@@ -99,7 +96,10 @@ def get_pontos_surf(img, treshold=15000):
     return kp, desc
 
 def get_transformada_entre_conjuntos_pontos(kp1, desc1, kp2, desc2):
+    matcher = cv2.BFMatcher(normType=cv2.NORM_L2, crossCheck=False)
     matches = matcher.knnMatch(desc2, desc1, k=2)
-    np.array([kp[matches[i][0].queryIdx].pt for i in range(len(matches))])
-
+    pt1 = np.array([kp1[matches[i][0].queryIdx].pt for i in range(len(matches))])
+    pt2 = np.array([kp2[matches[i][0].queryIdx].pt for i in range(len(matches))])
+    matriz, mascara = cv2.estimateAffinePartial2D(pts1, pts2)
+    return matriz, mascara
 
