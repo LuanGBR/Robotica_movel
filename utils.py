@@ -2,8 +2,12 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-with open("/home/pi/Robotica_movel/matrices.txt","r") as file:
-	matrices = eval(file.read())
+try:
+	with open("/home/pi/Robotica_movel/matrices.txt","r") as file:
+		matrices = eval(file.read())
+except:
+	with open("../matrices.txt","r") as file:
+		matrices = eval(file.read())
 	
 	
 mtx = np.array(matrices["mtx"])
