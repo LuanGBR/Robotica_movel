@@ -24,7 +24,7 @@ def _S():
 	_Nz[0:3, 2] = _N[:,3]
 	_Q = np.linalg.inv(_Nz)
 	S = _Q/_Q[2][2]
-	return Q, S
+	return S
 S = _S()
 
 def _mapaxy(dim=(4*297,4*210)):
