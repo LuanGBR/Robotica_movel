@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Círculos detectados</title>
+<script>
+var wsUri = (window.location.protocol=='https:'&&'wss://'||'ws://')+window.location.host+"/wsctrl";
+var canvas;
+var socket = new WebSocket(wsUri);
+socket.addEventListener('open', function (event) {
+    console.log('Connection estabilshed!');
+    socket.send("ack");
+});
+
+
+socket.addEventListener('close', function (event) {
+    console.log('Connection closed!');
+});
+
+socket.onmessage = function (event) {
+    console.log('Message from server ', event.data);
+    const data = JSON.parse(event.data);
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, 800, 800);
+    ctx.beginPath();
+    const radius = 12;
+    ctx.fillStyel = 'black';
+    data["coordenadas"].forEach(function(coord) {
+        ctx.moveTo(coord[0]+radius, 400-coord[1]);
+        ctx.arc(coord[0], 400-coord[1], radius, 0, 2 * Math.PI);
+    });
+    ctx.fill();
+    ctx.stroke();
+    socket.send("ack");
+}
+
+
+window.addEventListener("load", function(e) {
+    canvas = document.getElementById("mycanvas");
+});
+
+
+</script>
+</head>
+<html>
+<body>
+<canvas id="mycanvas" width="800" height="800" style="border:1px solid #000000;">
+Your browser does not support the HTML canvas tag.
+</canvas>
+</body>
+</html>
