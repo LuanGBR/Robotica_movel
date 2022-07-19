@@ -31,9 +31,8 @@ def _S():
 	S = _Q/_Q[2][2]
 	return S
 S = _S()
-C = np.zeros((3,3))
 
-def _mapaxy(dim=(4*297,4*210)):
+def _Q():
 	# valores obtidos com a função
 	# imagem2global de um notebook anterior
 	y_max = 333.522
@@ -41,12 +40,16 @@ def _mapaxy(dim=(4*297,4*210)):
 	x_max = 439.217
 	x_min = 62.422
 
-	s = 1
+	s = 1.2
     # matriz do campo visual do robô:
     # essa matriz está descrita no capítulo 6.6 como "Q"
 	C = np.array([[s,  0, -s*x_min],[0, -s,  s*y_max],[0,  0,		1]])
-    
-	return cv2.initUndistortRectifyMap(mtx, dist, S, C, dim, cv2.CV_32FC1)
+	return C
+Q = _Q()
+
+
+def _mapaxy(dim=(4*297,4*210)):
+	return cv2.initUndistortRectifyMap(mtx, dist, S, Q, dim, cv2.CV_32FC1)
 mapa_x,mapa_y = _mapaxy()
 
 
@@ -111,9 +114,23 @@ def get_pontos_surf(img, treshold=15000):
 
 def get_transformada_entre_conjuntos_pontos(kp1, desc1, kp2, desc2):
     matcher = cv2.BFMatcher(normType=cv2.NORM_L2, crossCheck=False)
+#     matches = matcher.knnMatch(desc2, desc1, k=2)
+#     pt1 = np.array([kp1[matches[i][0].queryIdx].pt for i in range(len(matches))])
+#     pt2 = np.array([kp2[matches[i][0].queryIdx].pt for i in range(len(matches))])
+    
     matches = matcher.knnMatch(desc2, desc1, k=2)
-    pt1 = np.array([kp1[matches[i][0].queryIdx].pt for i in range(len(matches))])
-    pt2 = np.array([kp2[matches[i][0].queryIdx].pt for i in range(len(matches))])
+    print(matches)
+    matchesMask = [[0 ,0] for i in range(len(matches))]
+    for i, (m, n) in enumerate(matches):
+        if m.distance < 0.7*n.distance:
+            matchesMask[i]=[1 ,0]
+    draw_params = dict(matchColor=(0,255,0),
+                    singlePointColor=(255,0,0),
+                    matchesMask=matchesMask,
+                    flags=cv2.DrawMatchesFlags_DEFAULT)
+    imagem = cv2.drawMatchesKnn(brabuleta, kp2, borboleta, kp1, matches, None ,**draw_params)
+    plt.imshow(imagem)
     matriz, mascara = cv2.estimateAffinePartial2D(pts1, pts2)
-    return matriz, mascara
+#     return matriz, mascara
+    return 1, 2
 

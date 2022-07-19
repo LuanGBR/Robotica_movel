@@ -28,13 +28,13 @@ class ProcessamentoVisao():
             # TODO: conferir se existem ao menos 8 associações boas
             matriz, mascara = get_transformada_entre_conjuntos_pontos(kp1, desc1, kp2, desc2)
             
-            if len(mascara) < 5:
-                print("aviso: mascara < 5")
+#             if len(mascara) < 5:
+#                 print("aviso: mascara < 5")
             
-            print(matriz)
+#             print(matriz)
             
             self.quadro_anterior = self.quadro
-    #             return (10.0, 10.0, 1.0*math.pi/180)
+#             return (10.0, 10.0, 1.0*math.pi/180)
             return (self.x, self.y, self.theta)
 
 
@@ -48,14 +48,14 @@ class EstimativaPosicao():
             self._video = cv2.VideoCapture(0)
             self._video.set(cv2.CAP_PROP_FRAME_WIDTH, 1280);
             self._video.set(cv2.CAP_PROP_FRAME_HEIGHT, 720);
-            # img = cv2.imread("../images/adp_v2.jpg")
             rc, img = self._video.read()
+            img = cv2.imread("../images/adp_v2.jpg")
             self._processamento = ProcessamentoVisao(1280, 720, 800)
             self._processamento.primeiroQuadro(img)
 
       def atualizaPosicao(self):
             rc, img = self._video.read()
-            # img = cv2.imread("../images/adp_v2.jpg")
+            img = cv2.imread("../images/adp_v2.jpg")
 
             if not rc:
                   print("not rc")
