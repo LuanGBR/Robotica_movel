@@ -3,9 +3,8 @@ import numpy as np
 import traceback
 import math
 
-module_path = os.path.abspath(os.path.join('..'))
-if module_path not in sys.path:
-    sys.path.append(module_path)
+import sys
+sys.path.insert(0, '../') #caminho relativo para a raiz
 from utils import *
 
 class ProcessamentoVisao():

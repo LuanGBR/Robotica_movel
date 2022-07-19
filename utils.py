@@ -2,8 +2,12 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-with open("/home/pi/Robotica_movel/matrices.txt","r") as file:
-	matrices = eval(file.read())
+try:
+	with open("/home/pi/Robotica_movel/matrices.txt","r") as file:
+		matrices = eval(file.read())
+except:
+	with open("../matrices.txt","r") as file:
+		matrices = eval(file.read())
 	
 	
 mtx = np.array(matrices["mtx"])
@@ -40,7 +44,7 @@ def _mapaxy(dim=(4*297,4*210)):
 	s = 1
     # matriz do campo visual do robô:
     # essa matriz está descrita no capítulo 6.6 como "Q"
-	C += np.array([[s,  0, -s*x_min],[0, -s,  s*y_max],[0,  0,		1]])
+	C = np.array([[s,  0, -s*x_min],[0, -s,  s*y_max],[0,  0,		1]])
     
 	return cv2.initUndistortRectifyMap(mtx, dist, S, C, dim, cv2.CV_32FC1)
 mapa_x,mapa_y = _mapaxy()
@@ -88,6 +92,16 @@ def imagem2global(p, lamb):
 	p = cv2.undistortPoints(np.float32(p), mtx, dist)
 	p = [*p[0][0], 1]
 	return lamb*rot.T@p - rot.T@trans
+
+def global2camera(coords_globais):
+    coords_projetadas, jac = cv2.projectPoints(np.array(coords_globais),rot,trans,mtx,dist)
+    
+    # coords_projetadas tem um formato indesejável, fazemos uma conversão
+    coords_camera = []
+    for c_p in coords_projetadas:
+        coords_camera.append([int(c_p[0][0]), int(c_p[0][1])])
+    
+    return coords_camera, jac
 
 def get_pontos_surf(img, treshold=15000):
     surf = cv2.xfeatures2d.SURF_create(60000)
