@@ -96,6 +96,16 @@ def imagem2global(p, lamb):
 	p = [*p[0][0], 1]
 	return lamb*rot.T@p - rot.T@trans
 
+def global2camera(coords_globais):
+    coords_projetadas, jac = cv2.projectPoints(np.array(coords_globais),rot,trans,mtx,dist)
+    
+    # coords_projetadas tem um formato indesejável, fazemos uma conversão
+    coords_camera = []
+    for c_p in coords_projetadas:
+        coords_camera.append([int(c_p[0][0]), int(c_p[0][1])])
+    
+    return coords_camera, jac
+
 def get_pontos_surf(img, treshold=15000):
     surf = cv2.xfeatures2d.SURF_create(60000)
     surf.setHessianThreshold(treshold)
