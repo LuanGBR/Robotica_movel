@@ -67,7 +67,6 @@ class Detector():
                                     # em coordenadas do robô
 
     def detecta(self):
-        print("detecta_started")
         ret, frame = self._vid.read()
         ts = int((self._vid.get(cv2.CAP_PROP_POS_MSEC)*1000000)+self._boot_time)
         # Imagem em tons de cinza
@@ -79,20 +78,16 @@ class Detector():
         # cv2.BORDER_REFLECT_101
         # cv2.BORDER_REPLICATE
         # cv2.BORDER_WRAP
-        print(81)
         img_remapeada = cv2.remap(img_cinza, self.mapa_x, self.mapa_y, cv2.INTER_LINEAR, borderMode=borda)
         img_blur = cv2.medianBlur(img_remapeada,5)
         method=cv2.HOUGH_GRADIENT
         dp=1
-        print(86)
         minDist=20*self._scale
         param1=100
         param2=15
         minRadius=self._min_radius
         maxRadius=self._max_radius
-        print(93)
         circles = cv2.HoughCircles ( img_blur , method , dp , minDist , param1 , param2 , minRadius , maxRadius )
-        print(95)
 
         # TODO:
         # 1. Remapeie a imagem
@@ -111,7 +106,6 @@ class Detector():
         else:
             ncircles = 0
         t = time.time()
-        print(114)
         print("n: " + str(ncircles) + " FPS: " + str(1/(t-self._prev_frame_ts)) + " lag: " + str(time.time() - ts/1000000000), end="\r")
         self._prev_frame_ts = t
         print(coordenadas, ts)
