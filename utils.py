@@ -13,7 +13,7 @@ trans = np.array(matrices["trans"])
 mtx2 = np.array(matrices["mtx2"])
 rodrigues, jacobiano = cv2.Rodrigues(rot)
 
-def _S():
+def _Q():
 	_P = np.array([[1, 0, 0, 0],[0, 1, 0, 0],[0, 0, 1, 0]])
 	_G = np.eye(4)
 	_G[0:3,0:3] = rodrigues
@@ -22,8 +22,12 @@ def _S():
 	_Nz = np.eye(3)
 	_Nz[0:3, 0:2] = _N[0:3,0:2]
 	_Nz[0:3, 2] = _N[:,3]
-	_Q = np.linalg.inv(_Nz)
-	S = _Q/_Q[2][2]
+	Q = np.linalg.inv(_Nz)
+	return Q
+Q = _Q()
+
+def _S():
+	S = Q/Q[2][2]
 	return S
 S = _S()
 
@@ -86,7 +90,16 @@ def captura_e_recalibra_extrinseca():
 def imagem2global(p, lamb):
 	p = cv2.undistortPoints(np.float32(p), mtx, dist)
 	p = [*p[0][0], 1]
-	return lamb*R.T@p - R.T@t
+	return lamb*rot.T@p - rot.T@trans
 
+def get_pontos_surf(img, treshold=15000):
+    surf = cv2.xfeatures2d.SURF_create(60000)
+    surf.setHessianThreshold(treshold)
+    kp, desc = surf.detectAndCompute(img, None)
+    return kp, desc
+
+def get_transformada_entre_conjuntos_pontos(kp1, desc1, kp2, desc2):
+    matches = matcher.knnMatch(desc2, desc1, k=2)
+    np.array([kp[matches[i][0].queryIdx].pt for i in range(len(matches))])
 
 
